@@ -1,36 +1,23 @@
 var mongoose = require('mongoose');
 
-// Setup schema
-var loginSchema = mongoose.Schema({
-    firstname: {
+var upSchema = mongoose.Schema({
+    lid: {
         type: String,
         required: true
     },
-    lastname: {
+    title: {
         type: String,
         required: true
     },
-    dob: {
+    amount: {
         type: String,
         required: true
     },
-    street: {
+    category: {
         type: String,
         required: true
     },
-    ph: {
-        type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        required: true
-    },
-    username: {
-        type: String,
-        required: true
-    },
-    password: {
+    filename: {
         type: String,
         required: true
     },
@@ -39,8 +26,13 @@ var loginSchema = mongoose.Schema({
         default: Date.now
     }
 });
+
+
+
 // Export Contact model
-var Login = module.exports = mongoose.model('logins', loginSchema);
+
+
+var Up = module.exports = mongoose.model('upload', upSchema);
 module.exports.get = function (callback, limit) {
-    Login.find(callback).limit(limit);
+    Up.find(callback).limit(limit);
 }

@@ -1,5 +1,8 @@
-// Import contact model
+// Import model
 Login = require('./loginModel');
+var bcrypt = require('bcrypt');
+const jwt=require('jsonwebtoken');
+
 // Handle index actions
 exports.index = function (req, res) {
     Login.get(function (err, logins) {
@@ -16,30 +19,25 @@ exports.index = function (req, res) {
         });
     });
 };
-// Handle create contact actions
+
+
 exports.new = function (req, res) {
     
     Login.findOne({ username: req.body.username }, function(err, login) {
         if(err) {
-           //handle error here
            res.send(err);
         }
-     
-        //if a user was found, that means the user's email matches the entered email
         if (login) {
-            /*
-              var err = new Error('Username Already exists!!!')
-             //err.status = 400;
-             return (err);
-             */
-             res.json({
+            res.json({
+                status: 'fail',
                 message: 'Username Already exists!!!'
             });
         } 
         else {
-            //code if no user with entered email was found
-
-            // save the contact and check for errors
+            bcrypt.hash(req.body.password, 10, function (err, hash){
+                if (err) {
+                  return next(err);
+                }
             var login = new Login();
             //login.username = req.body.username ? req.body.username : login.username;
             login.firstname = req.body.firstname;
@@ -49,21 +47,23 @@ exports.new = function (req, res) {
             login.ph = req.body.ph;
             login.email = req.body.email;
             login.username = req.body.username;
-            login.password = req.body.password;
-
-
+            login.password = hash;
 
             login.save(function (err) {
-            if (err)
-                res.json({
-                    message: 'Not Registered Successfully!'
+                if (err)
+                    res.json({
+                        status: 'fail',
+                        message: 'Not Registered Successfully!'
+                    });
+                else
+                    res.json({
+                        status: "success",
+                        message: 'Registered Successfully!'
+                    });
                 });
-            else
-                res.json({
-                message: 'Registered Successfully!',
-                data: login
-            });
-        });
+
+              })
+    
         }
      }); 
 
@@ -85,34 +85,47 @@ exports.log = function (req, res) {
         //if a user was found, that means the user's email matches the entered email
         if (login) {
             
-            Login.findOne({ username: req.body.username , password: req.body.password }, function(err, login) {
-                if(err) {
-                   //handle error here
-                   res.send(err);
-                }
-             
-                //if a user was found, that means the user's email matches the entered email
-                if (login) {
-                    
-                    res.json({
-                        message: 'Login success!!!'
-                    });
 
+            Login.findOne({ username: req.body.username }).then(function (login) {
+               if (!login) {
+                res.json({
+                    message: 'Invalid UsernameP!!!'
+                });
+               } else {
+            bcrypt.compare(req.body.password, login.password, function (err, result) {
+              if (result == true) {
+                  //res.redirect('/home');
 
-                } 
-                else {
-        
-                    res.json({
-                        message: 'Incorrect Password!!!'
-                    });
-                }
+                var token = jwt.sign({
+                    loginId: login._id
+                  }, 'secret', { expiresIn: 86400 });
+                  
 
+                
+                res.json({
+                    status: "success",
+                    message: 'Login success!!!',
+                    token: token
+                });
+                
+
+              } else {
+                res.json({
+                    status: "failure",
+                    message: 'Incorrect password!!!'
+                });
+
+              }
             });
+           }
+        });
+
 
         } 
         else {
 
             res.json({
+                status: "fail",
                 message: 'Invalid Username!!!'
             });
         }
@@ -123,6 +136,64 @@ exports.log = function (req, res) {
 
 
 
+
+
+
+exports.tok = function (req, res) {
+    Login.get(function (err, logins) {
+        if (err) {
+            res.json({
+                status: "error",
+                message: err,
+            });
+        }
+        else{
+            var token = req.body.to;
+            if (token) {
+
+                // verifies secret and checks exp
+                jwt.verify(token, 'secret', function(err, decoded) {       
+                    if (err) {
+                    return res.json({ success: false, message: 'Failed to authenticate token.' });       
+                } else {
+                    // if everything is good, save to request for use in other routes
+                    //req.decoded = decoded;         next();
+                    //var decoded = jwt.decode(token);
+                    res.json({ success: true, message: 'Authenticate success.', token, id: decoded.loginId });
+                }
+                });
+            
+              } else {
+            
+                // if there is no token
+                // return an error
+                return res.status(403).send({ 
+                    success: 'false', 
+                    message: 'No token provided.' 
+                });
+            
+              }
+            
+
+
+        }
+    });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 // Handle view contact info
 exports.view = function (req, res) {
@@ -167,3 +238,5 @@ res.json({
         });
     });
 };
+
+*/
