@@ -7,14 +7,52 @@ router.get('/', function (req, res) {
         message: 'Welcome to RESTHub crafted with love!',
     });
 });
-// Import contact controller
+// Import controller
 var loginController = require('./loginController');
+var fpController = require('./fpController');
+var upController = require('./upController');
 // Contact routes
 router.route('/logins')
     .get(loginController.index)
     .post(loginController.log);
 router.route('/register')
     .post(loginController.new);
+
+router.route('/t')
+    .get(loginController.tok);
+
+router.route('/up')
+    .get(upController.index)
+    .post(upController.upl);
+
+router.route('/view')
+    .post(upController.vw);
+
+router.route('/viewall')
+    .post(upController.vwall);
+
+
+/*
+router.route('/lala', sobin); 
+
+
+async function sobin(req,res){
+
+    console.log('hiii');
+}
+*/
+
+
+router.route('/frgtpswd')
+    .get(fpController.index)
+    .post(fpController.fpwd);
+router.route('/otp')
+    .post(fpController.otp);
+router.route('/rstpwd')
+    .post(fpController.rstp);
+
+router.route('/t')
+    .get(loginController.tok);
 
 
 /*

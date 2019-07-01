@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');
+
 // Setup schema
 var loginSchema = mongoose.Schema({
     firstname: {
@@ -39,7 +40,7 @@ var loginSchema = mongoose.Schema({
     }
 });
 // Export Contact model
-var Login = module.exports = mongoose.model('login', loginSchema);
+var Login = module.exports = mongoose.model('logins', loginSchema);
 module.exports.get = function (callback, limit) {
     Login.find(callback).limit(limit);
 }
